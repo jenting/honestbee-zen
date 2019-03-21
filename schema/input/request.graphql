@@ -1,0 +1,25 @@
+input RequestData {
+    request: Request!
+}
+
+input Request {
+    comment: RequestComment!
+    requester: RequestRequester!
+    subject: String!
+    ticketFormId: String
+    customFields: [CustomField!]
+}
+
+input RequestComment {
+    body: String!
+}
+
+input RequestRequester {
+    name: String!
+    email: String!
+}
+
+input CustomField {
+    id: String!
+    value: String!
+}

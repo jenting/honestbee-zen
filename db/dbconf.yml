@@ -1,0 +1,7 @@
+development:
+  driver: postgres
+  open: postgres://${DB_USER}:${DB_PASSWORD}@${ZEN_DATABASE_URI}:5432/${ZEN_DATABASE_NAME}?sslmode=disable
+
+ci:
+  driver: postgres
+  open: postgres://${DB_USER}:${DB_PASSWORD}@${ZEN_DATABASE_URI}:5432/${ZEN_DATABASE_NAME}?sslmode=disable

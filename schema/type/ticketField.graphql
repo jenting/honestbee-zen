@@ -1,0 +1,40 @@
+# A type that describes TicketField.
+type TicketField {
+    id: ID!
+    url: String!
+    type: String!
+    title: String!
+    rawTitle: String!
+    description: String!
+    rawDescription: String!
+    position: Int!
+    active: Boolean!
+    required: Boolean!
+    collapsedForAgents: Boolean!
+    regexpForValidation: String!
+    titleInPortal: String!
+    rawTitleInPortal: String!
+    visibleInPortal: Boolean!
+    editableInPortal: Boolean!
+    requiredInPortal: Boolean!
+    tag: String!
+    createdAt: Time!
+    updatedAt: Time!
+    removable: Boolean!
+    customFieldOptions: [TicketFieldCustomFieldOption!]
+    systemFieldOptions: [TicketFieldSystemFieldOption!]
+}
+
+# A type that describes TicketFieldCustomFieldOption.
+type TicketFieldCustomFieldOption {
+    id: ID!
+    name: String!
+    rawName: String!
+    value: String!
+}
+
+# A type that describes TicketFieldSystemFieldOption.
+type TicketFieldSystemFieldOption {
+    name: String!
+    value: String!
+}

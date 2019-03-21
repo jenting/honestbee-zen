@@ -1,0 +1,407 @@
+syntax = "proto3";
+package protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+enum CountryCode {
+    COUNTRY_CODE_SG = 0;
+    COUNTRY_CODE_HK = 1;
+    COUNTRY_CODE_TW = 2;
+    COUNTRY_CODE_JP = 3;
+    COUNTRY_CODE_TH = 4;
+    COUNTRY_CODE_MY = 5;
+    COUNTRY_CODE_ID = 6;
+    COUNTRY_CODE_PH = 7;
+}
+
+enum Locale {
+    LOCALE_EN_US = 0;
+    LOCALE_ZH_TW = 1;
+    LOCALE_ZH_CN = 2;
+    LOCALE_JA = 3;
+    LOCALE_TH = 4;
+    LOCALE_ID = 5;
+}
+
+enum SortBy {
+    SORT_BY_POSITION = 0;
+    SORT_BY_CREATED_AT = 1;
+    SORT_BY_UPDATED_AT = 2;
+}
+
+enum SortOrder {
+    SORT_ORDER_ASC = 0;
+    SORT_ORDER_DESC = 1;
+}
+
+enum Vote {
+    VOTE_UP = 0;
+    VOTE_DOWN = 1;
+}
+
+message Category {
+    string id = 1;
+    int32 position = 2;
+    google.protobuf.Timestamp createdAt = 3;
+    google.protobuf.Timestamp updatedAt = 4;
+    string sourceLocale = 5;
+    bool outdated = 6;
+    string countryCode = 7;
+    string keyName = 8;
+    string url = 9;
+    string htmlUrl = 10;
+    string name = 11;
+    string description = 12;
+    string locale = 13;
+}
+
+message Section {
+    string id = 1;
+    int32 position = 2;
+    google.protobuf.Timestamp createdAt = 3;
+    google.protobuf.Timestamp updatedAt = 4;
+    string sourceLocale = 5;
+    bool outdated = 6;
+    string countryCode = 7;
+    string url = 8;
+    string htmlUrl = 9;
+    string name = 10;
+    string description = 11;
+    string locale = 12;
+    string categoryId = 13;
+}
+
+message Article {
+    string id = 1;
+    string authorId = 2;
+    bool commentsDisable = 3;
+    bool draft = 4;
+    bool promoted = 5;
+    int32 position = 6;
+    int32 voteSum = 7;
+    int32 voteCount = 8;
+    google.protobuf.Timestamp createdAt = 9;
+    google.protobuf.Timestamp updatedAt = 10;
+    string sourceLocale = 11;
+    bool outdated = 12;
+    repeated string outdatedLocales = 13;
+    google.protobuf.Timestamp editedAt = 14;
+    repeated string labelNames = 15;
+    string countryCode = 16;
+    string url = 17;
+    string htmlUrl = 18;
+    string name = 19;
+    string title = 20;
+    string body = 21;
+    string locale = 22;
+    string sectionId = 23;
+}
+
+message TicketField {
+    string id = 1;
+    string url = 2;
+    string type = 3;
+    string title = 4;
+    string rawTitle = 5;
+    string description= 6;
+    string rawDescription= 7;
+    int32 position = 8;
+    bool active = 9;
+    bool required = 10;
+    bool collapsedForAgents = 11;
+    string regexpForValidation = 12;
+    string titleInPortal = 13;
+    string rawTitleInPortal = 14;
+    bool visibleInPortal = 15;
+    bool editableInPortal= 16;
+    bool requiredInPortal = 17;
+    string tag = 18;
+    google.protobuf.Timestamp createdAt = 19;
+    google.protobuf.Timestamp updatedAt = 20;
+    bool removable = 21;
+    repeated CustomFieldOption customFieldOptions = 22;
+    repeated SystemFieldOption systemFieldOptions = 23;
+}
+
+message CustomFieldOption {
+    string id = 1;
+    string name = 2;
+    string rawName = 3;
+    string value = 4;
+}
+
+message SystemFieldOption {
+    string name = 1;
+    string value = 2;
+}
+
+message SearchTitleArticle {
+    string title = 1;
+    string categoryTitle = 2;
+    string url = 3;
+}
+
+message SearchBodyArticle {
+    string id = 1;
+    string authorId = 2;
+    bool commentsDisable = 3;
+    bool draft = 4;
+    bool promoted = 5;
+    int32 position = 6;
+    int32 voteSum = 7;
+    int32 voteCount = 8;
+    google.protobuf.Timestamp createdAt = 9;
+    google.protobuf.Timestamp updatedAt = 10;
+    string sourceLocale = 11;
+    bool outdated = 12;
+    repeated string outdatedLocales = 13;
+    google.protobuf.Timestamp editedAt = 14;
+    repeated string labelNames = 15;
+    string countryCode = 16;
+    string url = 17;
+    string htmlUrl = 18;
+    string name = 19;
+    string title = 20;
+    string body = 21;
+    string locale = 22;
+    string snippet = 23;
+    string sectionId = 24;
+    string categoryId = 25;
+    string categoryName = 26;
+}
+
+message PageInfo {
+    int32 perPage = 1;
+    int32 page = 2;
+    int32 pageCount = 3;
+    int32 count = 4;
+}
+
+message GetCategoriesRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    SortBy sortBy = 3;
+    SortOrder sortOrder = 4;
+    int32 perPage = 5;
+    int32 page = 6;
+}
+
+message GetCategoriesResponse {
+    PageInfo pageInfo = 1;
+    repeated Category categories = 2;
+}
+
+message GetCategoryRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    oneof Id {
+        string categoryIdOrKeyname = 3;
+        string sectionId = 4;
+        string articleId = 5;
+    }
+}
+
+message GetCategoryResponse {
+    Category category = 1;
+}
+
+message GetSectionsRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    SortBy sortBy = 3;
+    SortOrder sortOrder = 4;
+    int32 perPage = 5;
+    int32 page = 6;
+    oneof Id {
+        bool all = 7;
+        string categoryId = 8;
+    }
+}
+
+message GetSectionsResponse {
+    PageInfo pageInfo = 1;
+    repeated Section sections = 2;
+}
+
+message GetSectionRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    oneof Id {
+        string sectionId = 3;
+        string articleId = 4;
+    }
+}
+
+message GetSectionResponse {
+    Section section = 1;
+}
+
+message GetArticlesRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    SortBy sortBy = 3;
+    SortOrder sortOrder = 4;
+    int32 perPage = 5;
+    int32 page = 6;
+    oneof Id {
+        bool all = 7;
+        string categoryId = 8;
+        string sectionId = 9;
+    }
+    repeated string labelNames = 10;
+}
+
+message GetArticlesResponse {
+    PageInfo pageInfo = 1;
+    repeated Article articles = 2;
+}
+
+message GetTopArticlesRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    int32 topN = 3;
+}
+
+message GetTopArticlesResponse {
+    repeated Article articles = 1;
+}
+
+message GetArticleRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    string articleId = 3;
+}
+
+message GetArticleResponse {
+    Article article = 1;
+}
+
+message GetTicketFormRequest {
+    string formId = 1;
+}
+
+message GetTicketFormResponse {
+    string id = 1;
+    string url = 2;
+    string name = 3;
+    string rawName = 4;
+    string displayName = 5;
+    string rawDisplayName = 6;
+    bool endUserVisible = 7;
+    int32 position = 8;
+    bool active = 9;
+    bool inAllBrands = 10;
+    repeated int32 restrictedBrandIds = 11;
+    google.protobuf.Timestamp createdAt = 12;
+    google.protobuf.Timestamp updatedAt = 13;
+}
+
+message GetTicketFieldsRequest {
+    string formId = 1;
+    Locale locale = 2;
+}
+
+message GetTicketFieldsResponse {
+   repeated TicketField ticketFields = 1;
+}
+
+message GetSearchTitleArticlesRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    string query = 3;
+}
+
+message GetSearchTitleArticlesResponse {
+    repeated SearchTitleArticle articles = 1;
+}
+
+message GetSearchBodyArticlesRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    SortOrder sortOrder = 3;
+    int32 perPage = 4;
+    int32 page = 5;
+    string query = 6;
+}
+
+message GetSearchBodyArticlesResponse {
+    PageInfo pageInfo = 1;
+    repeated SearchBodyArticle articles = 2;
+}
+
+message GetStatusRequest {
+}
+
+message GetStatusResponse {
+    string goVersion = 1;
+    string appVersion = 2;
+    google.protobuf.Timestamp serverTime = 3;
+}
+
+message SetCreateRequestRequest {
+    message Data {
+        message Request {
+            message Comment {
+                string body = 1;
+            }
+            message CustomField {
+                string id = 1;
+                string value = 2;
+            }
+            message Requester {
+                string name = 1;
+                string email = 2;
+            }
+            Comment comment = 2;
+            Requester requester = 3;
+            string subject = 4;
+            string ticketFormId = 5;
+            repeated CustomField customFields = 6;
+        }
+        Request request = 1;
+    }
+    CountryCode countryCode = 1;
+    Data data = 2;
+}
+
+message SetCreateRequestResponse {
+    string status = 1;
+}
+
+message SetVoteArticleRequest {
+    CountryCode countryCode = 1;
+    Locale locale = 2;
+    string articleId = 3;
+    Vote vote = 4;
+}
+
+message SetVoteArticleResponse {
+    Article article = 1;
+}
+
+message SetForceSyncRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message SetForceSyncResponse {
+    string status = 1;
+}
+
+service Zendesk {
+    rpc GetCategories (GetCategoriesRequest) returns (GetCategoriesResponse) {}
+    rpc GetCategory (GetCategoryRequest) returns (GetCategoryResponse) {}
+    rpc GetSections (GetSectionsRequest) returns (GetSectionsResponse) {}
+    rpc GetSection (GetSectionRequest) returns (GetSectionResponse) {}
+    rpc GetArticles (GetArticlesRequest) returns (GetArticlesResponse) {}
+    rpc GetTopArticles (GetTopArticlesRequest) returns (GetTopArticlesResponse) {}
+    rpc GetArticle (GetArticleRequest) returns (GetArticleResponse) {}
+    rpc GetTicketForm (GetTicketFormRequest) returns (GetTicketFormResponse) {}
+    rpc GetTicketFields (GetTicketFieldsRequest) returns (GetTicketFieldsResponse) {}
+    rpc GetSearchTitleArticles (GetSearchTitleArticlesRequest) returns (GetSearchTitleArticlesResponse) {}
+    rpc GetSearchBodyArticles (GetSearchBodyArticlesRequest) returns (GetSearchBodyArticlesResponse) {}
+    rpc GetStatus (GetStatusRequest) returns (GetStatusResponse) {}
+    rpc SetCreateRequest (SetCreateRequestRequest) returns (SetCreateRequestResponse) {}
+    rpc SetVoteArticle (SetVoteArticleRequest) returns (SetVoteArticleResponse) {}
+    rpc SetForceSync (SetForceSyncRequest) returns (SetForceSyncResponse) {}
+}

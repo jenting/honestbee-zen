@@ -1,0 +1,6 @@
+# A type that describes SearchTitleArticle.
+type SearchTitleArticle {
+    title: String!
+    categoryTitle: String!
+    url: String!
+}

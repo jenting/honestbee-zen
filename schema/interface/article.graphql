@@ -1,0 +1,25 @@
+# An interface that describes ArticleInterface.
+interface ArticleInterface {
+    id: ID!
+    authorId: String!
+    commentsDisable: Boolean!
+    draft: Boolean!
+    promoted: Boolean!
+    position: Int!
+    voteSum: Int!
+    voteCount: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    sourceLocale: String!
+    outdated: Boolean!
+    outdatedLocales: [String!]!
+    editedAt: Time!
+    labelNames: [String!]!
+    countryCode: String!
+    url: String!
+    htmlUrl: String!
+    name: String!
+    title: String!
+    body: String!
+    locale: String!
+}

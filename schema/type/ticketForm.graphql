@@ -1,0 +1,17 @@
+# A type that describes TicketForm.
+type TicketForm {
+    id: ID!
+    url: String!
+    name: String!
+    rawName: String!
+    displayName: String!
+    rawDisplayName: String!
+    endUserVisible: Boolean!
+    position: Int!
+    active: Boolean!
+    inAllBrands: Boolean!
+    restrictedBrandIds: [Int!]!
+    createdAt: Time!
+    updatedAt: Time!
+    ticketFieldsConnection(locale: Locale = EN_US): [TicketField!]
+}

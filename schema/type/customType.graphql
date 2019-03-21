@@ -1,0 +1,2 @@
+# Time is a RFC3339 timestamp.
+scalar Time

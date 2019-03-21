@@ -1,0 +1,27 @@
+# A type that describes Categories.
+type Categories implements PageInfo {
+    page: Int!
+    perPage: Int!
+    pageCount: Int!
+    count: Int!
+    categories: [Category!]
+}
+
+# A type that describes Category.
+type Category {
+    id: ID!
+    position: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    sourceLocale: String!
+    outdated: Boolean!
+    countryCode: String!
+    keyName: String!
+    url: String!
+    htmlUrl: String!
+    name: String!
+    description: String!
+    locale: String!
+    sectionsConnection(perPage: Int = 30, page: Int = 1, sortBy: SortBy = POSITION, sortOrder: SortOrder = ASC): Sections
+    articlesConnection(perPage: Int = 30, page: Int = 1, sortBy: SortBy = POSITION, sortOrder: SortOrder = ASC): Articles
+}

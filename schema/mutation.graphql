@@ -1,0 +1,11 @@
+# The Mutation type represents all of the entry points into the API.
+type Mutation {
+    # Send create request
+    createRequest(countryCode: CountryCode = SG, data: RequestData!): String
+
+    # Set article vote up/down by its id
+    voteArticle(articleId: ID!, vote: Vote!, countryCode: CountryCode = SG, locale: Locale = EN_US): Article
+
+    # Set force sync
+    forceSync(username: String!, password: String!) : String
+}

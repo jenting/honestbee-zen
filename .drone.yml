@@ -1,0 +1,326 @@
+workspace:
+  base: /go
+  path: src/github.com/honestbee/Zen
+
+clone:
+  git:
+    image: plugins/git
+    depth: 50
+    tags: true
+
+services:
+  database:
+    image: mdillon/postgis:9.6-alpine
+    environment:
+      - POSTGRES_USER=zen
+      - POSTGRES_PASSWORD=zen
+      - POSTGRES_DB=zen_test
+  redis:
+    image: redis:3.2
+
+pipeline:
+  prepare:
+    image: golang:1.11-alpine
+    pull: true
+    environment:
+      - GO111MODULE=on
+    commands:
+      - go version
+      - apk add --update --no-cache alpine-sdk
+      - go mod vendor
+      - go get bitbucket.org/liamstask/goose/cmd/goose
+      - curl -s -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+      - chmod +x ./cc-test-reporter
+
+  test:
+    image: golang:1.11-alpine
+    pull: true
+    environment:
+      - DB_USER=zen
+      - DB_PASSWORD=zen
+      - ZEN_DATABASE_URI=database
+      - ZEN_DATABASE_NAME=zen_test
+      - GIT_COMMIT_SHA=${DRONE_COMMIT_SHA}
+      - GIT_BRANCH=${DRONE_BRANCH}
+    secrets:
+      - cc_test_reporter_id
+    commands:
+      - apk add --update --no-cache git gcc g++ postgresql-client
+      - goose -env=ci up
+      - go test -v -coverprofile=unit.out ./...
+      - go test -v -coverprofile=integration.out -tags=integration ./integration -config_path= -db_user=zen -db_host=database -db_dbname=zen_test -db_password=zen -cache_host=redis -zendesk_auth_token=ZWRtdW5kLmthb0Bob25lc3RiZWUuY29tL3Rva2VuOmZXdmVMYXVvN0lzQVExQURrbE54ZFVySkIwMWN1aFltTnhVRmVIbE8=
+      - ./cc-test-reporter format-coverage -t gocov unit.out --output coverage/codeclimate.unit.json
+      - ./cc-test-reporter format-coverage -t gocov integration.out --output coverage/codeclimate.integration.json
+      - ./cc-test-reporter sum-coverage coverage/codeclimate.*.json
+      - ./cc-test-reporter upload-coverage
+
+  setup-staging-env:
+    environment:
+      - ENV=staging
+    image: python:alpine
+    secrets:
+      - port
+      - staging_db_host
+      - staging_db_name
+      - staging_db_user
+      - staging_db_password
+      - staging_redis_host
+      - staging_zendesk_auth_token
+      - staging_datadog_env
+    commands:
+      - pip install pyaml
+      - python scripts/setup_env.py
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+
+  setup-prod-env:
+    environment:
+      - ENV=production
+    image: python:alpine
+    secrets:
+      - port
+      - prod_db_host
+      - prod_db_name
+      - prod_db_user
+      - prod_db_password
+      - prod_redis_host
+      - prod_zendesk_auth_token
+      - prod_datadog_env
+    commands:
+      - pip install pyaml
+      - python scripts/setup_env.py
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*]
+        exclude: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+
+  publish-staging-env:
+    image: plugins/docker
+    repo: quay.io/honestbee/zen
+    registry: ${DOCKER_REGISTRY}
+    secrets:
+      - docker_username
+      - docker_password
+      - docker_registry
+    tags:
+      - ${DRONE_TAG##v}
+    build_args:
+      - DEPLOY_ENV=staging
+      - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+
+  publish-prod-env:
+    image: plugins/docker
+    repo: quay.io/honestbee/zen
+    registry: ${DOCKER_REGISTRY}
+    secrets:
+      - docker_username
+      - docker_password
+      - docker_registry
+    tags:
+      - ${DRONE_TAG##v}
+    build_args:
+      - DEPLOY_ENV=production
+      - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*]
+        exclude: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+
+  migrate-staging:
+    image: golang:1.11-alpine
+    secrets:
+      - source: staging_db_user
+        target: db_user
+      - source: staging_db_password
+        target: db_password
+      - source: staging_db_host
+        target: zen_database_uri
+      - source: staging_db_name
+        target: zen_database_name
+    commands:
+      - goose -env=ci up
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+
+  deploy-staging-1a:
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+    group: deploy
+    image: quay.io/honestbee/drone-helm
+    skip_tls_verify: true
+    wait: true
+    helm_repos: hb-charts=https://helm-charts.internal.honestbee.com
+    chart: hb-charts/zendesk
+    chart_version: "0.1.5"
+    values: image.tag=${DRONE_TAG##v},ingress.az=apse1a
+    values_files: deployment/values-staging.yaml
+    release: zendesk
+    tiller_ns: helpcenter
+    namespace: helpcenter
+    recreate_pods: true
+    secrets:
+      - source: kubernetes_api_staging-1a
+        target: api_server
+      - source: kubernetes_token_staging-1a
+        target: kubernetes_token
+
+  deploy-staging-1b:
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+    group: deploy
+    image: quay.io/honestbee/drone-helm
+    skip_tls_verify: true
+    wait: true
+    helm_repos: hb-charts=https://helm-charts.internal.honestbee.com
+    chart: hb-charts/zendesk
+    chart_version: "0.1.5"
+    values: image.tag=${DRONE_TAG##v},ingress.az=apse1b
+    values_files: deployment/values-staging.yaml
+    release: zendesk
+    tiller_ns: helpcenter
+    namespace: helpcenter
+    recreate_pods: true
+    secrets:
+      - source: kubernetes_api_staging-1b
+        target: api_server
+      - source: kubernetes_token_staging-1b
+        target: kubernetes_token
+
+  migrate-production:
+    image: golang:1.11-alpine
+    secrets:
+      - source: prod_db_user
+        target: db_user
+      - source: prod_db_password
+        target: db_password
+      - source: prod_db_host
+        target: zen_database_uri
+      - source: prod_db_name
+        target: zen_database_name
+    commands:
+      - goose -env=ci up
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*]
+        exclude: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+
+  deploy-production-1a:
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*]
+        exclude: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+    group: deploy
+    image: quay.io/honestbee/drone-helm
+    skip_tls_verify: true
+    wait: true
+    helm_repos: hb-charts=https://helm-charts.internal.honestbee.com
+    chart: hb-charts/zendesk
+    chart_version: "0.1.5"
+    values: image.tag=${DRONE_TAG##v},ingress.az=apse1a
+    values_files: deployment/values-prod.yaml
+    release: zendesk
+    tiller_ns: helpcenter
+    namespace: helpcenter
+    recreate_pods: true
+    secrets:
+      - source: kubernetes_api_production-1a
+        target: api_server
+      - source: kubernetes_token_production-1a
+        target: kubernetes_token
+
+  deploy-production-1b:
+    when:
+      event: tag
+      status: success
+      branch: master
+      ref:
+        include: [refs/tags/*]
+        exclude: [refs/tags/*alpha*, refs/tags/*beta*, refs/tags/*rc*]
+    group: deploy
+    image: quay.io/honestbee/drone-helm
+    skip_tls_verify: true
+    wait: true
+    helm_repos: hb-charts=https://helm-charts.internal.honestbee.com
+    chart: hb-charts/zendesk
+    chart_version: "0.1.5"
+    values: image.tag=${DRONE_TAG##v},ingress.az=apse1b
+    values_files: deployment/values-prod.yaml
+    release: zendesk
+    tiller_ns: helpcenter
+    namespace: helpcenter
+    recreate_pods: true
+    secrets:
+      - source: kubernetes_api_production-1b
+        target: api_server
+      - source: kubernetes_token_production-1b
+        target: kubernetes_token
+
+  notify:
+    image: plugins/slack
+    webhook: ${SLACK_WEBHOOK}
+    channel: feed-devops
+    secrets:
+      - slack_webhook
+    when:
+      status: [success, failure]
+
+  deploy-notify:
+    when:
+      branch: master
+      status: [success, failure]
+      event: tag
+      ref:
+        include: [refs/tags/*]
+    image: plugins/slack
+    webhook: ${SLACK_WEBHOOK}
+    channel: tw-zendesk-developers
+    template: >
+      {{#success build.status}}
+        repo = `{{repo.name}}`. Deployment succeeded. Good job.
+        app-version = `{{build.tag}}`
+        branch = `{{build.branch}}`
+        git-commit-hash = `{{build.commit}}`
+      {{else}}
+        drone-build-number = {{build.number}} failed. Fix me please.
+        https://drone.honestbee.com/honestbee/{{repo.name}}/{{build.number}}
+
+        app-version = `{{build.tag}}`
+        branch = `{{build.branch}}`
+        git-commit-hash = `{{build.commit}}`
+      {{/success}}
+    secrets:
+      - slack_webhook

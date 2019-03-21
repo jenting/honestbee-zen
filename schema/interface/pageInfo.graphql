@@ -1,0 +1,7 @@
+# An interface that describes PageInfo.
+interface PageInfo {
+    page: Int!
+    perPage: Int!
+    pageCount: Int!
+    count: Int!
+}

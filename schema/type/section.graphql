@@ -1,0 +1,26 @@
+# A type that describes Sections.
+type Sections implements PageInfo {
+    page: Int!
+    perPage: Int!
+    pageCount: Int!
+    count: Int!
+    sections: [Section!]
+}
+
+# A type that describes Section.
+type Section {
+    id: ID!
+    position: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    sourceLocale: String!
+    outdated: Boolean!
+    countryCode: String!
+    url: String!
+    htmlUrl: String!
+    name: String!
+    description: String!
+    locale: String!
+    categoryConnection: Category
+    articlesConnection(perPage: Int = 30, page: Int = 1, sortBy: SortBy = POSITION, sortOrder: SortOrder = ASC): Articles
+}

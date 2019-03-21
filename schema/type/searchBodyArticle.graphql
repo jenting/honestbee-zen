@@ -1,0 +1,37 @@
+# A type that describes SearchBodyArticles.
+type SearchBodyArticles implements PageInfo {
+    page: Int!
+    perPage: Int!
+    pageCount: Int!
+    count: Int!
+    articles: [SearchBodyArticle!]
+}
+
+# A type that describes SearchBodyArticle.
+type SearchBodyArticle implements ArticleInterface {
+    id: ID!
+    authorId: String!
+    commentsDisable: Boolean!
+    draft: Boolean!
+    promoted: Boolean!
+    position: Int!
+    voteSum: Int!
+    voteCount: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    sourceLocale: String!
+    outdated: Boolean!
+    outdatedLocales: [String!]!
+    editedAt: Time!
+    labelNames: [String!]!
+    countryCode: String!
+    url: String!
+    htmlUrl: String!
+    name: String!
+    title: String!
+    body: String!
+    locale: String!
+    snippet: String!
+    categoryConnection: Category
+    sectionConnection: Section
+}

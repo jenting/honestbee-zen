@@ -1,0 +1,30 @@
+# The Query type represents all of the entry points into the API.
+type Query {
+    # Get all categories.
+    allCategories(countryCode: CountryCode = SG, locale: Locale = EN_US, perPage: Int = 30, page: Int = 1, sortBy: SortBy = POSITION, sortOrder: SortOrder = ASC): Categories!
+    # Get category by its id or keyname.
+    oneCategory(categoryIdOrKeyname: ID!, countryCode: CountryCode = SG, locale: Locale = EN_US): Category
+    
+    # Get all sections
+    allSections(countryCode: CountryCode = SG, locale: Locale = EN_US, perPage: Int = 30, page: Int = 1, sortBy: SortBy = POSITION, sortOrder: SortOrder = ASC): Sections!
+    # Get section by its id.
+    oneSection(sectionId: ID!, countryCode: CountryCode = SG, locale: Locale = EN_US): Section
+
+    # Get all articles.
+    allArticles(countryCode: CountryCode = SG, locale: Locale = EN_US, perPage: Int = 30, page: Int = 1, sortBy: SortBy = POSITION, sortOrder: SortOrder = ASC): Articles!
+    # Get topN articles.
+    topArticles(topN: Int!, countryCode: CountryCode = SG, locale: Locale = EN_US): [Article!]
+    # Get article by its id.
+    oneArticle(articleId: ID!, countryCode: CountryCode = SG, locale: Locale = EN_US): Article
+
+    # Get ticket forms by its id.
+    oneTicketForm(formId: ID!): TicketForm!
+
+    # Get search article's title
+    searchTitleArticles(query: String!, countryCode: CountryCode = SG, locale: Locale = EN_US): [SearchTitleArticle!]
+    # Get search article's body
+    searchBodyArticles(query: String!, countryCode: CountryCode = SG, locale: Locale = EN_US, perPage: Int = 30, page: Int = 1, sortOrder: SortOrder = ASC): SearchBodyArticles
+
+    # Get status.
+    status: Status!
+}

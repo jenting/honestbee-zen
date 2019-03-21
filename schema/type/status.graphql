@@ -1,0 +1,6 @@
+# A type that describes Status.
+type Status {
+    goVersion: String!
+    appVersion: String!
+    serverTime: Time!
+}

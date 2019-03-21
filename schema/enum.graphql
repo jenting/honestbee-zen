@@ -1,0 +1,40 @@
+# The enum CountryCode.
+enum CountryCode {
+    SG
+    HK
+    TW
+    JP
+    TH
+    MY
+    ID
+    PH
+}
+
+# The enum Locale.
+enum Locale {
+    EN_US
+    ZH_TW
+    ZH_CN
+    JA
+    TH
+    ID
+}
+
+# The enum SortBy sort method.
+enum SortBy {
+    POSITION
+    CREATED_AT
+    UPDATED_AT
+}
+
+# The enum SortOrder sort order.
+enum SortOrder {
+    ASC
+    DESC
+}
+
+# The enum Vote represents up/down vote.
+enum Vote {
+    UP
+    DOWN
+}
